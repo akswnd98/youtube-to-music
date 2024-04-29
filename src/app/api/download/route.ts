@@ -12,8 +12,8 @@ export async function GET (
   req: NextRequest,
   res: NextResponse,
 ) {
+  const url = req.nextUrl.searchParams.get('url');
   try {
-    const url = req.nextUrl.searchParams.get('url');
     if (url === null) {
       throw 'url is null';
     }
