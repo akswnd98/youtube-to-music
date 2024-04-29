@@ -1,4 +1,8 @@
+import { convertMp4ToMp3 } from '@/utils/convert';
+import { downloadHighestAudioVersionVideo } from '@/utils/download';
 import { NextRequest, NextResponse } from 'next/server';
+import fs from 'fs';
+import { generateRandomString } from '@/utils/randomGenerate';
 
 export type RequestType = {
   videoId: string;
@@ -9,32 +13,28 @@ export async function GET (
   res: NextResponse,
 ) {
   try {
-    const videoId = req.nextUrl.searchParams.get('videoId');
-    if (videoId === null) {
-      throw 'videoId is null';
+    const url = req.nextUrl.searchParams.get('url');
+    if (url === null) {
+      throw 'url is null';
     }
-    const queryUrl = `https://www.youtube.com/youtubei/v1/player?videoId=${videoId}&contentCheckOk=true&racyCheckOk=true`;
-    const queryRes = await fetch(queryUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        context: {
-          client: {
-              clientName: 'WEB',
-              clientVersion: '2.20200720.00.02',
-          },
-          header: {
-              'User-Agent': 'Mozilla/5.0',
-          },
-          api_key: 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8',
-        },
-      }),
-    });
-    console.log('queryRes: ', await queryRes.json());
+    const filebase = generateRandomString(10);
+    const mp4Filename = `${filebase}.mp4`;
+    await downloadHighestAudioVersionVideo(url, `public/download/${mp4Filename}`);
+    await convertMp4ToMp3(`public/download/${mp4Filename}`);
 
-    return NextResponse.json({ message: 'hello world' });
+    return NextResponse.json({
+      path: `/download/${mp4Filename.split('.')[0]}.mp3`,
+    });
+
+    // const headers = new Headers();
+    // headers.set('Content-Type', 'audio/mpeg');
+
+    // const blob = new Blob([fs.readFileSync(`public/download/${mp4Filename.split('.')[0]}.mp3`)]);
+    // return new NextResponse(blob, {
+    //   status: 200,
+    //   statusText: 'OK',
+    //   headers
+    // });
   } catch (e) {
     console.log(e);
     return NextResponse.error();
