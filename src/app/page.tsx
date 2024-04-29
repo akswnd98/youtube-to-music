@@ -10,7 +10,6 @@ const Root = styled.div`
 
 export default function Home() {
   const [url, setUrl] = useState('');
-  const [downloadPath, setDownloadPath] = useState('');
 
   return (
     <Root>
@@ -20,21 +19,11 @@ export default function Home() {
           setUrl(event.target.value);
         }}
       ></input>
-      <button
-        onClick={async () => {
-          const res = await axios.get(`/api/download?url=${url}`)
-          setDownloadPath(res.data.path);
-        }}
+      <a
+        href={`/api/download?url=${url}`}
       >
         download
-      </button>
-      {
-        downloadPath === '' ? (
-          null
-        ) : (
-          <a href={downloadPath}>mp3</a>
-        )
-      }
+      </a>
     </Root>
   );
 }
